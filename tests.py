@@ -32,17 +32,17 @@ class TestingClass(TestCase):
 
     def test_functional(self):
         for i in range(2, 9):
-            encode(r'test_res\in.bmp', r'test_res\file.bmp',
+            encode(r'test_res\in.bmp', r'test_res\file.jpg',
                    r'test_res\out file.bmp', i)
-            decode(r'test_res\out file.bmp', r'test_res\decode_file.bmp')
+            decode(r'test_res\out file.bmp', r'test_res\decoded_file.jpg')
             self.assertEqual(
-                read_bytearray_from_file(r'test_res\decode_file.bmp'),
-                read_bytearray_from_file(r'test_res\in.bmp')
+                read_bytearray_from_file(r'test_res\decoded_file.jpg'),
+                read_bytearray_from_file(r'test_res\file.jpg')
             )
 
     def test_overflow(self):
-        self.assertRaises(DataLostPossibility, encode,
-                          r'test_res\in.bmp', r'test_res\file.bmp',
+        self.assertRaises(SystemExit,
+                          encode, r'test_res\in.bmp', r'test_res\in.bmp',
                           r'test_res\out file.bmp')
 
 
