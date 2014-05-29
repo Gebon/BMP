@@ -1,0 +1,3 @@
+@echo off
+python -m unittest -v tests.py
+set /p s=Press enter...

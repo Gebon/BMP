@@ -1,18 +1,35 @@
+"""
+Main module for decoding
+"""
 __author__ = 'Галлям'
 
 from math import ceil
 
-from additional import read_bytearray_from_file, try_get_file_header,\
+from src.additional import read_bytearray_from_file, try_get_file_header,\
     split_bytearray, write_to, NotEncodedError
 
 
 def check_encoded(bmp_data, msg):
+    """
+    Check's that file was encoded by encode() function
+    :param bmp_data: bytearray
+    :param msg: message that must be encoded in data
+    :raise NotEncodedError: say that file not encoded
+    """
     decoded_msg = _decode(bmp_data, 1, len(msg))
     if msg != decoded_msg:
         raise NotEncodedError()
 
 
 def _decode_specified_bits(data, bit_count, bits=8, start_index=0):
+    """
+    Decode specified bits and return result
+    :param data: bytearray
+    :param bit_count: integer
+    :param bits: integer
+    :param start_index: integer
+    :return: integer value
+    """
     counter = 0
     result = 0
     is_end = False
@@ -41,6 +58,13 @@ def _decode_specified_bits(data, bit_count, bits=8, start_index=0):
 
 
 def _decode(data, bit_count, data_length_in_bytes=None):
+    """
+    Internal decode method
+    :param data: bytearray
+    :param bit_count: integer
+    :param data_length_in_bytes: integer
+    :return: decode data as bytearray
+    """
     result = bytearray()
     if data_length_in_bytes is None:
         data_length = len(data)
@@ -53,11 +77,16 @@ def _decode(data, bit_count, data_length_in_bytes=None):
 
 
 def decode(file_to_decode_path, out_file_path):
+    """
+    Decode file and write decoded data to out_file_path
+    :param file_to_decode_path: obviously
+    :param out_file_path: obviously
+    """
     bmp_data = read_bytearray_from_file(file_to_decode_path)
 
     file_header = try_get_file_header(bmp_data)
 
-    header, bmp_data = split_bytearray(bmp_data, file_header.off_bits)
+    bmp_data = split_bytearray(bmp_data, file_header.off_bits)[1]
 
     msg = b'encoded'
     try:
@@ -81,3 +110,4 @@ def decode(file_to_decode_path, out_file_path):
     file_data = _decode(bmp_data, bit_count, file_length)
 
     write_to(out_file_path, file_data)
+

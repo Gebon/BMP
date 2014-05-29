@@ -1,3 +1,6 @@
+"""
+Module with classes for BMP info
+"""
 __author__ = 'Галлям'
 
 #constants
@@ -15,6 +18,9 @@ BI_ALPHABITFIELDS = 6
 
 
 class BitMapInfo:
+    """
+    Structure (for more see documentation in Microsoft's site)
+    """
     def __init__(self, header, rgb_quad):
         self.header = header
         self.rgb_quad = rgb_quad
@@ -24,6 +30,9 @@ class BitMapInfo:
 
 
 class BitMapInfoHeader:
+    """
+    Structure (for more see documentation in Microsoft's site)
+    """
     def __init__(self, info):
         self.my_size = info[0]
         self.width = info[1]
@@ -57,6 +66,9 @@ class BitMapInfoHeader:
 
 
 class BitMapV4Header(BitMapInfoHeader):
+    """
+    Structure (for more see documentation in Microsoft's site)
+    """
     def __init__(self, info):
         BitMapInfoHeader.__init__(self, info[:-9])
         self.red_mask = info[11]
@@ -83,6 +95,9 @@ class BitMapV4Header(BitMapInfoHeader):
 
 
 class BitMapV5Header(BitMapV4Header):
+    """
+    Structure (for more see documentation in Microsoft's site)
+    """
     def __init__(self, info):
         BitMapV4Header.__init__(self, info[:-4])
         self.intent = info[20]
@@ -99,6 +114,9 @@ class BitMapV5Header(BitMapV4Header):
 
 
 class RGBQuad:
+    """
+    Structure (for more see documentation in Microsoft's site)
+    """
     def __init__(self, red, green, blue):
         self.rgb_red = red
         self.rgb_green = green

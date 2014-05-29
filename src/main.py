@@ -1,8 +1,11 @@
+"""
+Main module for all program
+"""
 __author__ = 'Галлям'
 
-from encoding import encode
-from decoding import decode
-from additional import create_argument_parser
+from src.encoding import encode
+from src.decoding import decode
+from src.additional import create_argument_parser
 
 parser = create_argument_parser()
 args = parser.parse_args()

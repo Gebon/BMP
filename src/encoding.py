@@ -1,8 +1,11 @@
+"""
+Main module for encoding
+"""
 __author__ = 'Галлям'
 
 from math import ceil
 
-from additional import read_bytearray_from_file, write_to, \
+from src.additional import read_bytearray_from_file, write_to, \
     try_get_file_header, split_bytearray, check_data_lost_possibility, \
     DataLostPossibility
 
@@ -35,20 +38,27 @@ def _encode_to_byte(value, bit_count, elem_size, target, counter=0):
     return counter + 1
 
 
-def _encode(data, to, bit_count, elem_size):
+def _encode(data, target, bit_count, elem_size):
     """
-    Function that encode one sequence of elements to another
+    Function that encode one sequence of elements target another
     :param data: source sequence
-    :param to: target sequence
+    :param target: target sequence
     :param bit_count: bits per byte
     :param elem_size: size in bits of each element in source
     """
     counter = 0
     for value in data:
-        counter = _encode_to_byte(value, bit_count, elem_size, to, counter)
+        counter = _encode_to_byte(value, bit_count, elem_size, target, counter)
 
 
 def encode(bmp_file_path, file_to_encode_path, out_file_path, bit_count=1):
+    """
+    Encode something file to BMP file and record result to out_file_path
+    :param bmp_file_path: BMP file
+    :param file_to_encode_path: File to encode
+    :param out_file_path: Obviously
+    :param bit_count: bits per byte
+    """
     bmp_data = read_bytearray_from_file(bmp_file_path)
     file_data = read_bytearray_from_file(file_to_encode_path)
 
