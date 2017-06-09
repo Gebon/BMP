@@ -5,7 +5,7 @@ __author__ = 'Галлям'
 
 from math import ceil
 
-from src.additional import read_bytearray_from_file, try_get_file_header,\
+from additional import read_bytearray_from_file, try_get_file_header,\
     split_bytearray, write_to, NotEncodedError
 
 

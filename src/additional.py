@@ -2,13 +2,10 @@
 Module for additional methods that needn't to encode/decode,
 but very useful for theirs implementing
 """
-__author__ = 'Галлям'
-
-from struct import unpack_from
 from argparse import ArgumentParser
 from math import ceil
 
-from src.bit_map_file_header import BitMapFileHeader, FILE_HEADER_FMT
+from bit_map_file_header import BitMapFileHeader
 
 
 def create_argument_parser():
@@ -39,18 +36,9 @@ def create_argument_parser():
     return parser
 
 
-class WrongArgument(BaseException):
+class DataLossPossibility(Exception):
     """
-    Exception class
-    """
-    def __init__(self, msg):
-        BaseException.__init__(self)
-        self.msg = msg
-
-
-class DataLostPossibility(Exception):
-    """
-    Exception class
+    Indicates that data will be lost with such configuration
     """
     def __init__(self, msg=None):
         if msg is None:
@@ -61,7 +49,8 @@ class DataLostPossibility(Exception):
 
 class NotEncodedError(Exception):
     """
-    Exception class
+    Indicates that file is not encoded, i.e. there is no 
+    hidden data within BMP file 
     """
     def __init__(self, msg=None):
         if msg is None:
@@ -70,33 +59,23 @@ class NotEncodedError(Exception):
         self.msg = msg
 
 
-def read_bytearray_from_file(path):
+def read_bytearray_from_file(path: str) -> bytearray:
     """
-    Read bytes from file, convert it to bytearray and return
+    Read file in binary format and return it as bytearray
     :param path: path to file
-    :return: bytearray
     """
     with open(path, 'rb') as file:
         return bytearray(file.read())
-
-
-def read_readme():
-    """
-    Print to the console README.md file
-
-    """
-    with open('README.md', encoding='utf8') as readme:
-        for line in readme:
-            print(line)
 
 
 def get_file_header(bmp_data):
     """
     Get file header from BMP file data
     :param bmp_data: bytearray
-    :return: bit_map_file_header instance :raise InvalidFileHeader:
+    :return: BitMapFileHeader instance
+    :raise InvalidFileHeader:
     """
-    file_header = BitMapFileHeader(unpack_from(FILE_HEADER_FMT, bmp_data))
+    file_header = BitMapFileHeader(bmp_data)
     if file_header.type != 'BM':
         raise InvalidFileHeader()
     return file_header
@@ -104,7 +83,7 @@ def get_file_header(bmp_data):
 
 class InvalidFileHeader(Exception):
     """
-    Exception class
+    Indicates that this header is not of BMP type 
     """
     def __init__(self, msg=None):
         if msg is None:
@@ -113,7 +92,7 @@ class InvalidFileHeader(Exception):
         self.msg = msg
 
 
-def check_data_lost_possibility(file_data, bmp_data, bit_count):
+def check_data_loss_possibility(file_data: bytearray, bmp_data: bytearray, bit_count: int):
     """
     Check that data can be encoded without loss
     :param file_data: file to encoding
@@ -122,14 +101,14 @@ def check_data_lost_possibility(file_data, bmp_data, bit_count):
     :raise DataLostPossibility: exception
     """
     if ceil(len(file_data) * 8 / bit_count) > len(bmp_data):
-        raise DataLostPossibility()
+        raise DataLossPossibility()
 
 
-def try_get_file_header(bmp_data):
+def try_get_file_header(bmp_data: bytearray) -> BitMapFileHeader:
     """
-    Try to get BMP file header. If it can't be done, raise an exception
-    :param bmp_data: bytearray
-    :return: bit_map_file_header instance
+    Try to get BMP file header. If it's not BMP file, exits with code = 2
+    :param bmp_data: potentially bmp file data
+    :return: extracted header
     """
     try:
         return get_file_header(bmp_data)
@@ -138,7 +117,7 @@ def try_get_file_header(bmp_data):
         exit(2)
 
 
-def write_to(path, data):
+def write_to(path: str, data: bytearray):
     """
     Write bytearray content to file specified by path
     :param path: path to target file
@@ -148,11 +127,11 @@ def write_to(path, data):
         file.write(data)
 
 
-def split_bytearray(bytearr, offset):
+def split_bytearray(bytearr: bytearray, offset: int):
     """
-    Split bytearr by offset
-    :param bytearr: bytearr to split
+    Split bytearray into two parts by offset
+    :param bytearr: bytearray to split
     :param offset: offset
-    :return: tuple with to part of bytearr
+    :return: tuple with two parts of bytearray
     """
     return bytearr[:offset], bytearr[offset:]

@@ -1,8 +1,7 @@
 """
 This module contains only one class
 """
-
-__author__ = 'Галлям'
+from struct import unpack_from
 
 FILE_HEADER_FMT = '<2sIHHI'
 
@@ -11,7 +10,8 @@ class BitMapFileHeader:
     """
     Class that represent BitMapFileHeader structure
     """
-    def __init__(self, info):
+    def __init__(self, bmp_data: bytearray):
+        info = unpack_from(FILE_HEADER_FMT, bmp_data)
         self._type = info[0].decode()
         self.size = info[1]
         self._reserved1 = info[2]
