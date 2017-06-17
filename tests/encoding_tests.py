@@ -4,38 +4,18 @@ Tests for encoding part
 from unittest import TestCase, main
 
 from common_utils import get_path_to_resource
-from src.encoding import encode, _encode_number
-from src.decoding import decode, _decode_specified_bits
+from src.encoding import encode, _encode_number, _encode_number_into_another_number
 
 
 class TestingClass(TestCase):
-    """
-    Class with test functions
-    """
-    def setUp(self):
-        """
-        Set's up required data for each test
-
-        """
-        self.value = 127
-        self.res_data = {1: bytearray(b'\x00\x01\x01\x01\x01\x01\x01\x01'),
-                         2: bytearray(b'\x01\x03\x03\x03\x00\x00\x00\x00'),
-                         3: bytearray(b'\x03\x07\x06\x00\x00\x00\x00\x00'),
-                         4: bytearray(b'\x07\x0f\x00\x00\x00\x00\x00\x00'),
-                         5: bytearray(b'\x0f\x1c\x00\x00\x00\x00\x00\x00'),
-                         6: bytearray(b'\x1f\x30\x00\x00\x00\x00\x00\x00'),
-                         7: bytearray(b'\x3f\x40\x00\x00\x00\x00\x00\x00'),
-                         8: bytearray(b'\x7f\x00\x00\x00\x00\x00\x00\x00')}
-
     def test_encoding_one_value(self):
         """
         Test that one integer encoded correctly with different bit_count value
-
         """
+        value = 127
         for i in range(1, 9):
-            data = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
-            _encode_number(self.value, 8, i, data)
-            TestCase.assertEqual(self, data, self.res_data[i])
+            encoded, _ = _encode_number_into_another_number(value, 0, i, 8 - 1)
+            self.assertEqual(encoded, 2 ** (i - 1) - 1)
 
     def test_overflow(self):
         """

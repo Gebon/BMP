@@ -1,8 +1,6 @@
 """
 Main module for decoding
 """
-__author__ = 'Галлям'
-
 from math import ceil
 
 from additional import read_bytearray_from_file, try_get_file_header,\
@@ -76,7 +74,7 @@ def _decode(data, bit_count, data_length_in_bytes=None):
     return result
 
 
-def decode(file_to_decode_path, out_file_path):
+def decode(file_to_decode_path: str, out_file_path: str):
     """
     Decode file and write decoded data to out_file_path
     :param file_to_decode_path: obviously

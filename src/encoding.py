@@ -6,17 +6,14 @@ from math import ceil
 from additional import read_bytearray_from_file, write_to, \
     try_get_file_header, split_bytearray, check_data_loss_possibility, \
     DataLossPossibility
-
-
-SIZEOF_FILE_LENGTH_NUMBER = 32
-SIZEOF_CHAR = 8
-SIZEOF_USED_BITS_PER_BYTE_NUMBER = 3
+from constants import SIZEOF_FILE_LENGTH_NUMBER, SIZEOF_CHAR, SIZEOF_USED_BITS_PER_BYTE_NUMBER, \
+    MSG_ENCODING
 
 
 def _encode_number(coded_number: int, sizeof_coded_number: int, used_bits_per_byte: int,
                    container: bytearray, invokes_count=0) -> int:
     """
-    Function that encodes integer element with specififc size in bits
+    Function that encodes integer element with specific size in bits
     (coded_element_size) into container with specified bits per byte used to encode (used_bits_per_byte)
     :param coded_number: integer value to be encoded within container
     :param sizeof_coded_number: sizeof(coded_number) in bits, e.g. for values limited with range 0..255 must be 8
@@ -25,10 +22,10 @@ def _encode_number(coded_number: int, sizeof_coded_number: int, used_bits_per_by
     :param invokes_count: count of this method invokes
     :return: new counter value
     """
-    bytes_needed_for_encoding = round(ceil(sizeof_coded_number / used_bits_per_byte))
-    shift_within_container = bytes_needed_for_encoding * invokes_count
+    count_of_bytes_needed_for_encoding = round(ceil(sizeof_coded_number / used_bits_per_byte))
+    shift_within_container = count_of_bytes_needed_for_encoding * invokes_count
     shift_of_coded_number = sizeof_coded_number - 1
-    for j in range(bytes_needed_for_encoding):
+    for j in range(count_of_bytes_needed_for_encoding):
         for i in range(used_bits_per_byte - 1, -1, -1):
             if coded_number >> shift_of_coded_number & 1:
                 container[j + shift_within_container] |= 1 << i # set (8 - i)-th bit to 1
@@ -40,6 +37,19 @@ def _encode_number(coded_number: int, sizeof_coded_number: int, used_bits_per_by
                 return invokes_count + 1
 
 
+def _encode_number_into_another_number(coded_number, container_number, used_bits_per_byte, shift_of_coded_number):
+    shift_within_container_number = used_bits_per_byte - 1
+    while shift_of_coded_number >= 0 and shift_within_container_number >= 0:
+        if coded_number >> shift_of_coded_number & 1:
+            container_number |= 1 << shift_within_container_number  # set (8 - i)-th bit to 1
+        else:
+            container_number &= ~(1 << shift_within_container_number)  # set (8 - i)-th bit to 0
+        shift_of_coded_number -= 1
+        shift_within_container_number -= 1
+
+    return container_number, shift_of_coded_number
+
+
 def _encode(data: [int], container: bytearray, used_bits_per_byte: int, sizeof_coded_number: int):
     """
     Function that encodes one sequence of numbers into bytearray
@@ -48,9 +58,18 @@ def _encode(data: [int], container: bytearray, used_bits_per_byte: int, sizeof_c
     :param used_bits_per_byte: see _encode_to_byte
     :param sizeof_coded_number: see _encode_to_byte
     """
-    invokes_count = 0
-    for number in data:
-        invokes_count = _encode_number(number, sizeof_coded_number, used_bits_per_byte, container, invokes_count)
+    count_of_bytes_needed_for_encoding_one_number = round(ceil(sizeof_coded_number / used_bits_per_byte))
+    for i, coded_number in enumerate(data):
+        shift_within_container = count_of_bytes_needed_for_encoding_one_number * i
+        shift_of_coded_number = sizeof_coded_number - 1
+        for j in range(count_of_bytes_needed_for_encoding_one_number):
+            container[j + shift_within_container], shift_of_coded_number = _encode_number_into_another_number(coded_number,
+                                                                       container[j + shift_within_container],
+                                                                       used_bits_per_byte,
+                                                                       shift_of_coded_number)
+
+            if shift_of_coded_number < 0:
+                break
 
 
 def encode(bmp_file_path, file_to_encode_path, out_file_path, bit_count=1):
@@ -68,9 +87,8 @@ def encode(bmp_file_path, file_to_encode_path, out_file_path, bit_count=1):
 
     header, bmp_data = split_bytearray(bmp_data, file_header.off_bits)
 
-    msg = b'encoded'
-    _encode(bytearray(msg), bmp_data, 1, SIZEOF_CHAR)
-    encoded_msg, bmp_data = split_bytearray(bmp_data, len(msg)*SIZEOF_CHAR)
+    _encode(bytearray(MSG_ENCODING), bmp_data, 1, SIZEOF_CHAR)
+    encoded_msg, bmp_data = split_bytearray(bmp_data, len(MSG_ENCODING)*SIZEOF_CHAR)
 
     file_length = len(file_data)
     _encode((file_length,), bmp_data, 1, SIZEOF_FILE_LENGTH_NUMBER)
