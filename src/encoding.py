@@ -7,37 +7,18 @@ from additional import read_bytearray_from_file, write_to, \
     try_get_file_header, split_bytearray, check_data_loss_possibility, \
     DataLossPossibility
 from constants import SIZEOF_FILE_LENGTH_NUMBER, SIZEOF_CHAR, SIZEOF_USED_BITS_PER_BYTE_NUMBER, \
-    MSG_ENCODING
-
-
-def _encode_number(coded_number: int, sizeof_coded_number: int, used_bits_per_byte: int,
-                   container: bytearray, invokes_count=0) -> int:
-    """
-    Function that encodes integer element with specific size in bits
-    (coded_element_size) into container with specified bits per byte used to encode (used_bits_per_byte)
-    :param coded_number: integer value to be encoded within container
-    :param sizeof_coded_number: sizeof(coded_number) in bits, e.g. for values limited with range 0..255 must be 8
-    :param used_bits_per_byte: count of bits used in each byte to encode coded_element
-    :param container: target bytearray which used to store encoded data
-    :param invokes_count: count of this method invokes
-    :return: new counter value
-    """
-    count_of_bytes_needed_for_encoding = round(ceil(sizeof_coded_number / used_bits_per_byte))
-    shift_within_container = count_of_bytes_needed_for_encoding * invokes_count
-    shift_of_coded_number = sizeof_coded_number - 1
-    for j in range(count_of_bytes_needed_for_encoding):
-        for i in range(used_bits_per_byte - 1, -1, -1):
-            if coded_number >> shift_of_coded_number & 1:
-                container[j + shift_within_container] |= 1 << i # set (8 - i)-th bit to 1
-            else:
-                container[j + shift_within_container] &= ~(1 << i) # set (8 - i)-th bit to 0
-            shift_of_coded_number -= 1
-
-            if shift_of_coded_number < 0:
-                return invokes_count + 1
+    MSG_ENCODED
 
 
 def _encode_number_into_another_number(coded_number, container_number, used_bits_per_byte, shift_of_coded_number):
+    """
+    Function that encodes number into container number with specified bits per byte used to encode (used_bits_per_byte)
+    :param coded_number: integer value to be encoded within container
+    :param used_bits_per_byte: count of bits used in each byte to encode coded_element
+    :param container_number: target number which used to store encoded data
+    :param shift_of_coded_number: specifies which part of number should be encoded into container
+    :return: tuple (container_number, shift_of_coded_number), where container_number already contains encoded data
+    """
     shift_within_container_number = used_bits_per_byte - 1
     while shift_of_coded_number >= 0 and shift_within_container_number >= 0:
         if coded_number >> shift_of_coded_number & 1:
@@ -63,10 +44,9 @@ def _encode(data: [int], container: bytearray, used_bits_per_byte: int, sizeof_c
         shift_within_container = count_of_bytes_needed_for_encoding_one_number * i
         shift_of_coded_number = sizeof_coded_number - 1
         for j in range(count_of_bytes_needed_for_encoding_one_number):
-            container[j + shift_within_container], shift_of_coded_number = _encode_number_into_another_number(coded_number,
-                                                                       container[j + shift_within_container],
-                                                                       used_bits_per_byte,
-                                                                       shift_of_coded_number)
+            container[j + shift_within_container], shift_of_coded_number = \
+                _encode_number_into_another_number(coded_number, container[j + shift_within_container],
+                                                   used_bits_per_byte, shift_of_coded_number)
 
             if shift_of_coded_number < 0:
                 break
@@ -87,8 +67,8 @@ def encode(bmp_file_path, file_to_encode_path, out_file_path, bit_count=1):
 
     header, bmp_data = split_bytearray(bmp_data, file_header.off_bits)
 
-    _encode(bytearray(MSG_ENCODING), bmp_data, 1, SIZEOF_CHAR)
-    encoded_msg, bmp_data = split_bytearray(bmp_data, len(MSG_ENCODING)*SIZEOF_CHAR)
+    _encode(bytearray(MSG_ENCODED), bmp_data, 1, SIZEOF_CHAR)
+    encoded_msg, bmp_data = split_bytearray(bmp_data, len(MSG_ENCODED) * SIZEOF_CHAR)
 
     file_length = len(file_data)
     _encode((file_length,), bmp_data, 1, SIZEOF_FILE_LENGTH_NUMBER)

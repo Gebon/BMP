@@ -4,7 +4,7 @@ Tests for encoding part
 from unittest import TestCase, main
 
 from common_utils import get_path_to_resource
-from src.encoding import encode, _encode_number, _encode_number_into_another_number
+from src.encoding import encode, _encode_number_into_another_number
 
 
 class TestingClass(TestCase):
